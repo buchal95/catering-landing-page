@@ -4,6 +4,12 @@ import { motion } from 'framer-motion'
 import { Award, Clock, Heart, Shield, Star, Users } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 
+declare global {
+  interface Window {
+    dataLayer: Record<string, unknown>[];
+  }
+}
+
 export default function WhyChooseUs() {
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -165,7 +171,7 @@ export default function WhyChooseUs() {
           className="mt-16 text-center"
         >
           <div className="bg-gray-50 rounded-2xl p-8 max-w-4xl mx-auto">
-            <div className="text-4xl text-orange-500 mb-4">"</div>
+            <div className="text-4xl text-orange-500 mb-4">&ldquo;</div>
             <blockquote className="text-xl text-gray-700 italic mb-6 leading-relaxed">
               Zakládáme si na individuálním přístupu ke každému klientovi. Připravíme pro vás 
               návrh menu podle vašeho přání, zajistíme profesionální obsluhu, inventář i kompletní logistiku. 

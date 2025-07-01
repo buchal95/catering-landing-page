@@ -4,6 +4,12 @@ import { motion } from 'framer-motion'
 import { Building2, Heart, Sun, Users } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 
+declare global {
+  interface Window {
+    dataLayer: Record<string, unknown>[];
+  }
+}
+
 export default function Services() {
   const sectionRef = useRef<HTMLElement>(null);
 

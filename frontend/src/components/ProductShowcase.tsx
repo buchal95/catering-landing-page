@@ -3,6 +3,12 @@
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 
+declare global {
+  interface Window {
+    dataLayer: Record<string, unknown>[];
+  }
+}
+
 export default function ProductShowcase() {
   const sectionRef = useRef<HTMLElement>(null);
   const [activeCategory, setActiveCategory] = useState('savory');

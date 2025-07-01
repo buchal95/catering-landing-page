@@ -2,6 +2,12 @@
 
 import { ChefHat, Mail, MapPin, Phone } from 'lucide-react'
 
+declare global {
+  interface Window {
+    dataLayer: Record<string, unknown>[];
+  }
+}
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 

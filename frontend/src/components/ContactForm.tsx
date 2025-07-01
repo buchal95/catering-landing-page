@@ -7,6 +7,12 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
+declare global {
+  interface Window {
+    dataLayer: Record<string, unknown>[];
+  }
+}
+
 const formSchema = z.object({
   name: z.string().min(2, 'Jméno musí mít alespoň 2 znaky'),
   email: z.string().email('Neplatná emailová adresa'),
@@ -106,7 +112,7 @@ export default function ContactForm() {
       } else {
         throw new Error('Submission failed');
       }
-    } catch (error) {
+    } catch {
       console.log('Form would be submitted:', data);
       // For now, simulate success since backend isn't ready
       setSubmitStatus('success');
