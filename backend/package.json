@@ -1,0 +1,29 @@
+{
+  "name": "catering-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Catering v krabici - Lead management system",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "init-db": "node init-db.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["catering", "api", "leads", "express"],
+  "author": "Catering v krabici",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.0.1",
+    "express": "^5.1.0",
+    "express-session": "^1.18.1",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
