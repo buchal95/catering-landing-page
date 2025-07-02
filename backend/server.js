@@ -204,6 +204,42 @@ app.get('/admin/me', requireAuth, async (req, res) => {
   }
 });
 
+// Change admin password
+app.post('/admin/change-password', requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password required' });
+    }
+
+    // Get current admin
+    const adminResult = await pool.query('SELECT * FROM admin_users WHERE id = $1', [req.session.adminId]);
+    if (adminResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Admin not found' });
+    }
+
+    const admin = adminResult.rows[0];
+
+    // Verify current password
+    const isValidPassword = await bcrypt.compare(currentPassword, admin.password_hash);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Current password is incorrect' });
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await pool.query('UPDATE admin_users SET password_hash = $1 WHERE id = $2', [hashedNewPassword, req.session.adminId]);
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Get all leads (admin only)
 app.get('/api/leads', requireAuth, async (req, res) => {
   try {

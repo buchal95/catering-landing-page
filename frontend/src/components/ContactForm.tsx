@@ -90,7 +90,8 @@ export default function ContactForm() {
 
     try {
       // Send to Railway backend API
-      const response = await fetch('https://catering-landing-page-production.up.railway.app/api/contact', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://catering-landing-page-production.up.railway.app';
+      const response = await fetch(`${apiUrl}/api/contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
