@@ -59,7 +59,12 @@ connectWithRetry();
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:3000',
+    'https://catering-landing-page-buchal95.vercel.app',
+    'https://catering-landing-page-git-main-buchal95.vercel.app',
+    /^https:\/\/catering-landing-page.*\.vercel\.app$/
+  ],
   credentials: true
 }));
 

@@ -89,8 +89,8 @@ export default function ContactForm() {
     }
 
     try {
-      // TODO: Replace with actual API endpoint when backend is ready
-      const response = await fetch('/api/contact', {
+      // Send to Railway backend API
+      const response = await fetch('https://catering-landing-page-production.up.railway.app/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,29 +99,31 @@ export default function ContactForm() {
       });
 
       if (response.ok) {
+        const result = await response.json();
         setSubmitStatus('success');
         reset();
-        
+
         // Track successful submission
         if (typeof window !== 'undefined' && window.dataLayer) {
           window.dataLayer.push({
             'event': 'form_submit_success',
-            'form_name': 'contact_form'
+            'form_name': 'contact_form',
+            'lead_id': result.leadId
           });
         }
       } else {
         throw new Error('Submission failed');
       }
-    } catch {
-      console.log('Form would be submitted:', data);
-      // For now, simulate success since backend isn't ready
-      setSubmitStatus('success');
-      reset();
-      
+    } catch (error) {
+      console.error('Form submission error:', error);
+      setSubmitStatus('error');
+
+      // Track form error
       if (typeof window !== 'undefined' && window.dataLayer) {
         window.dataLayer.push({
-          'event': 'form_submit_success',
-          'form_name': 'contact_form'
+          'event': 'form_submit_error',
+          'form_name': 'contact_form',
+          'error_message': error instanceof Error ? error.message : 'Unknown error'
         });
       }
     } finally {
