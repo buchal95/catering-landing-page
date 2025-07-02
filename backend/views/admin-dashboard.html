@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Catering v krabici</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        orange: {
+                            500: '#f97316',
+                            600: '#ea580c'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Catering v krabici</h1>
+                    <p class="text-sm text-gray-600">Správa objednávek</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-600">Přihlášen jako: <strong>admin</strong></span>
+                    <button 
+                        onclick="logout()" 
+                        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium"
+                    >
+                        Odhlásit se
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-bold" id="totalCount">0</span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Celkem objednávek</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-bold" id="pendingCount">0</span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Nutno zavolat</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-bold" id="negotiatingCount">0</span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Domlouvá se</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-bold" id="confirmedCount">0</span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Domluveno</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leads Table -->
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900">Objednávky</h2>
+                <button 
+                    onclick="loadLeads()" 
+                    class="mt-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium"
+                >
+                    Obnovit
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jméno</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontakt</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Akce</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stav</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Datum</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leadsTable" class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                Načítám objednávky...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const statusColors = {
+            'nutno zavolat': 'bg-yellow-100 text-yellow-800',
+            'domlouvá se': 'bg-orange-100 text-orange-800',
+            'domluveno': 'bg-green-100 text-green-800',
+            'padlo to': 'bg-red-100 text-red-800'
+        };
+
+        const statusOptions = ['nutno zavolat', 'domlouvá se', 'domluveno', 'padlo to'];
+
+        async function loadLeads() {
+            try {
+                const response = await fetch('/api/leads', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/admin';
+                        return;
+                    }
+                    throw new Error('Failed to load leads');
+                }
+                
+                const data = await response.json();
+                displayLeads(data.leads);
+                updateStats(data.leads);
+            } catch (error) {
+                console.error('Error loading leads:', error);
+                document.getElementById('leadsTable').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-red-500">
+                            Chyba při načítání objednávek
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function displayLeads(leads) {
+            const tbody = document.getElementById('leadsTable');
+            
+            if (leads.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                            Žádné objednávky
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = leads.map(lead => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${lead.name}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${lead.email}</div>
+                        <div class="text-sm text-gray-500">${lead.phone}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${lead.event_type}</div>
+                        <div class="text-sm text-gray-500">${lead.guest_count} osob</div>
+                        <div class="text-sm text-gray-500">${new Date(lead.event_date).toLocaleDateString('cs-CZ')}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusColors[lead.status]}">
+                            ${lead.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${new Date(lead.created_at).toLocaleDateString('cs-CZ')}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <select 
+                            onchange="updateStatus(${lead.id}, this.value)"
+                            class="text-sm border border-gray-300 rounded-md px-2 py-1"
+                        >
+                            ${statusOptions.map(status => 
+                                `<option value="${status}" ${status === lead.status ? 'selected' : ''}>${status}</option>`
+                            ).join('')}
+                        </select>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStats(leads) {
+            document.getElementById('totalCount').textContent = leads.length;
+            document.getElementById('pendingCount').textContent = leads.filter(l => l.status === 'nutno zavolat').length;
+            document.getElementById('negotiatingCount').textContent = leads.filter(l => l.status === 'domlouvá se').length;
+            document.getElementById('confirmedCount').textContent = leads.filter(l => l.status === 'domluveno').length;
+        }
+
+        async function updateStatus(leadId, newStatus) {
+            try {
+                const response = await fetch(`/api/leads/${leadId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status: newStatus }),
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update status');
+                }
+
+                // Reload leads to refresh the display
+                loadLeads();
+            } catch (error) {
+                console.error('Error updating status:', error);
+                alert('Chyba při aktualizaci stavu');
+                loadLeads(); // Reload to reset the dropdown
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch('/admin/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/admin';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/admin';
+            }
+        }
+
+        // Load leads on page load
+        loadLeads();
+    </script>
+</body>
+</html>

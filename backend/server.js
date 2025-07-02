@@ -3,6 +3,8 @@ const cors = require('cors');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
+const path = require('path');
+const fs = require('fs');
 
 // Load environment variables (optional for Railway)
 try {
@@ -107,16 +109,28 @@ app.get('/health', async (req, res) => {
 
 // Root endpoint for Railway
 app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Catering Backend API', 
+  res.json({
+    message: 'Catering Backend API',
     status: 'running',
     endpoints: {
       health: '/health',
       admin: '/admin',
+      dashboard: '/admin/dashboard',
       leads: '/api/leads',
-      contact: '/api/contact'
+      contact: '/api/contact',
+      testForm: '/test-form'
     }
   });
+});
+
+// Test form for creating sample leads
+app.get('/test-form', (req, res) => {
+  const testFormPath = path.join(__dirname, 'views', 'test-form.html');
+  if (fs.existsSync(testFormPath)) {
+    res.sendFile(testFormPath);
+  } else {
+    res.json({ error: 'Test form not found' });
+  }
 });
 
 // Authentication middleware
@@ -254,35 +268,68 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
-// Simple admin panel HTML (for development/testing)
+// Admin login page
 app.get('/admin', (req, res) => {
-  if (!req.session.isAuthenticated) {
+  if (req.session.isAuthenticated) {
+    return res.redirect('/admin/dashboard');
+  }
+
+  const loginPath = path.join(__dirname, 'views', 'admin-login.html');
+  if (fs.existsSync(loginPath)) {
+    res.sendFile(loginPath);
+  } else {
+    // Fallback simple login form
     res.send(`
       <!DOCTYPE html>
       <html>
       <head><title>Admin Login</title></head>
       <body>
         <h2>Admin Login</h2>
-        <form action="/admin/login" method="post">
-          <input type="text" name="username" placeholder="Username" required><br><br>
-          <input type="password" name="password" placeholder="Password" required><br><br>
+        <form id="loginForm">
+          <input type="text" id="username" placeholder="Username" required><br><br>
+          <input type="password" id="password" placeholder="Password" required><br><br>
           <button type="submit">Login</button>
         </form>
+        <script>
+          document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const response = await fetch('/admin/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+              }),
+              credentials: 'include'
+            });
+            if (response.ok) {
+              window.location.href = '/admin/dashboard';
+            } else {
+              alert('Login failed');
+            }
+          });
+        </script>
       </body>
       </html>
     `);
+  }
+});
+
+// Admin dashboard
+app.get('/admin/dashboard', requireAuth, (req, res) => {
+  const dashboardPath = path.join(__dirname, 'views', 'admin-dashboard.html');
+  if (fs.existsSync(dashboardPath)) {
+    res.sendFile(dashboardPath);
   } else {
     res.send(`
       <!DOCTYPE html>
       <html>
-      <head><title>Admin Panel</title></head>
+      <head><title>Admin Dashboard</title></head>
       <body>
-        <h2>Admin Panel</h2>
+        <h2>Admin Dashboard</h2>
         <p>Welcome! Use the API endpoints to manage leads.</p>
         <a href="/api/leads">View Leads (JSON)</a><br>
-        <form action="/admin/logout" method="post">
-          <button type="submit">Logout</button>
-        </form>
+        <button onclick="fetch('/admin/logout', {method: 'POST', credentials: 'include'}).then(() => location.href='/admin')">Logout</button>
       </body>
       </html>
     `);
