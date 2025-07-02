@@ -3,10 +3,21 @@ const cors = require('cors');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
-require('dotenv').config();
+
+// Load environment variables (optional for Railway)
+try {
+  require('dotenv').config();
+} catch (error) {
+  // dotenv not available or no .env file (normal on Railway)
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+console.log('🚀 Starting Catering Backend...');
+console.log('📊 Environment:', process.env.NODE_ENV || 'development');
+console.log('🔌 Port:', PORT);
+console.log('🗄️ Database URL:', process.env.DATABASE_URL ? 'Set' : 'Not set');
 
 // Database connection with Railway-specific configuration
 const pool = new Pool({
@@ -53,15 +64,17 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session configuration
+// Session configuration (simplified for Railway)
 app.use(session({
   secret: process.env.SESSION_SECRET || 'catering-secret-key-change-in-production',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: false, // Set to false for Railway (they handle HTTPS termination)
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
+  },
+  // Use memory store for simplicity (fine for single instance)
+  name: 'catering.sid'
 }));
 
 // IMPORTANT: Railway healthcheck endpoint with retry logic

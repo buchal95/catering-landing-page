@@ -1,6 +1,12 @@
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
-require('dotenv').config();
+
+// Load environment variables (optional for Railway)
+try {
+  require('dotenv').config();
+} catch (error) {
+  // dotenv not available or no .env file (normal on Railway)
+}
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
